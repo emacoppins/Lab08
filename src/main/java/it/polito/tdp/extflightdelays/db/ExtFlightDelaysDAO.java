@@ -7,10 +7,11 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-
+import java.util.Map;
 import it.polito.tdp.extflightdelays.model.Airline;
 import it.polito.tdp.extflightdelays.model.Airport;
 import it.polito.tdp.extflightdelays.model.Flight;
+import it.polito.tdp.extflightdelays.model.Rotta;
 
 public class ExtFlightDelaysDAO {
 
@@ -37,7 +38,7 @@ public class ExtFlightDelaysDAO {
 		}
 	}
 
-	public List<Airport> loadAllAirports() {
+	public List<Airport> loadAllAirports(Map<Integer, Airport> idMap) {
 		String sql = "SELECT * FROM airports";
 		List<Airport> result = new ArrayList<Airport>();
 
@@ -47,10 +48,14 @@ public class ExtFlightDelaysDAO {
 			ResultSet rs = st.executeQuery();
 
 			while (rs.next()) {
-				Airport airport = new Airport(rs.getInt("ID"), rs.getString("IATA_CODE"), rs.getString("AIRPORT"),
-						rs.getString("CITY"), rs.getString("STATE"), rs.getString("COUNTRY"), rs.getDouble("LATITUDE"),
-						rs.getDouble("LONGITUDE"), rs.getDouble("TIMEZONE_OFFSET"));
-				result.add(airport);
+				if(!idMap.containsKey(rs.getInt("ID"))){
+					Airport airport = new Airport(rs.getInt("ID"), rs.getString("IATA_CODE"), rs.getString("AIRPORT"),
+							rs.getString("CITY"), rs.getString("STATE"), rs.getString("COUNTRY"), rs.getDouble("LATITUDE"),
+							rs.getDouble("LONGITUDE"), rs.getDouble("TIMEZONE_OFFSET"));
+					result.add(airport);
+					idMap.put(airport.getId(), airport);
+				}
+				
 			}
 
 			conn.close();
@@ -91,4 +96,53 @@ public class ExtFlightDelaysDAO {
 			throw new RuntimeException("Error Connection Database");
 		}
 	}
+
+	public List<Rotta> coppiaAeroporti(Map<Integer, Airport> idMap) {
+		String sql = "SELECT ORIGIN_AIRPORT_ID AS PARTENZA, DESTINATION_AIRPORT_ID AS ARRIVO, AVG(DISTANCE) AS PESO FROM flights GROUP BY ORIGIN_AIRPORT_ID, DESTINATION_AIRPORT_ID" ;
+		
+		List<Rotta> result = new ArrayList<>();
+		
+		try {
+			Connection conn = ConnectDB.getConnection() ;
+			PreparedStatement st = conn.prepareStatement(sql);
+			ResultSet res = st.executeQuery();
+			
+			while(res.next()) {
+				Rotta r = new Rotta(idMap.get(res.getInt("PARTENZA")),idMap.get(res.getInt("ARRIVO")));
+				r.setPeso(res.getFloat("PESO"));
+				result.add(r);
+			}
+			
+			conn.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return result ;
+	}
+
+	//METODO PER APPROCCIO SEMPLICE
+	public int getPeso(Airport a1, Airport a2) {
+
+		String sql = "SELECT AVG(DISTANCE) as PESO FROM flights WHERE ORIGIN_AIRPORT_ID = ? AND DESTINATION_AIRPORT_ID = ?";
+		Connection conn = ConnectDB.getConnection();
+		try {
+			PreparedStatement st = conn.prepareStatement(sql);
+			st.setInt(1, a1.getId());
+			st.setInt(2, a2.getId());
+			ResultSet res = st.executeQuery();
+			if(res.next()) {
+				int peso = res.getInt("PESO");
+				conn.close();
+				return peso;
+			}
+			conn.close();
+		} catch (SQLException e) {
+			
+			e.printStackTrace();
+		}
+		return -1;
+	}
+	
 }
