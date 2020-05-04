@@ -1,8 +1,6 @@
 package it.polito.tdp.extflightdelays.model;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import org.jgrapht.Graph;
 import org.jgrapht.Graphs;
 import org.jgrapht.graph.DefaultWeightedEdge;
@@ -28,12 +26,12 @@ public class Model {
 		//Aggiungere i vertici
 		Graphs.addAllVertices(this.grafo, idMap.values());
 		
-		List<Rotta> rotte = dao.coppiaAeroporti(idMap) ;
-		for(Rotta r : rotte) {
+		Map<String, Rotta> rotte = dao.coppiaAeroporti(idMap);
+		for(Rotta r : rotte.values()) {
 			if(r.getPeso() >= distanzaMin) {
 				Graphs.addEdge(this.grafo, idMap.get(r.getSource().getId()), idMap.get(r.getTarget().getId()), r.getPeso());
 			}
-		}	
+		}
 		
 		return grafo;
 		

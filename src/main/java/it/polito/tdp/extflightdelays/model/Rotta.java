@@ -2,14 +2,19 @@ package it.polito.tdp.extflightdelays.model;
 
 public class Rotta {
 	
+	private String idRotta;
 	private Airport source;
 	private Airport target;
 	private float peso;
+	private int conta;
 
-	public Rotta(Airport source, Airport target) {
+	public Rotta(String idRotta, Airport source, Airport target) {
 		// TODO Auto-generated constructor stub
+		this.idRotta = idRotta;
 		this.source=source;
 		this.target=target;
+		this.peso = 0;
+		this.conta = 0;
 	}
 
 	public Airport getSource() {
@@ -29,11 +34,45 @@ public class Rotta {
 	}
 
 	public float getPeso() {
-		return peso;
+		return peso/conta;
 	}
 
 	public void setPeso(float peso) {
-		this.peso = peso;
+		this.conta++;
+		this.peso+=peso;
+	}
+
+	public String getIdRotta() {
+		return idRotta;
+	}
+
+	public void setIdRotta(String idRotta) {
+		this.idRotta = idRotta;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((idRotta == null) ? 0 : idRotta.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Rotta other = (Rotta) obj;
+		if (idRotta == null) {
+			if (other.idRotta != null)
+				return false;
+		} else if (!idRotta.equals(other.idRotta))
+			return false;
+		return true;
 	}
 
 }

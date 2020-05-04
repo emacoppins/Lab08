@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -97,28 +98,50 @@ public class ExtFlightDelaysDAO {
 		}
 	}
 
-	public List<Rotta> coppiaAeroporti(Map<Integer, Airport> idMap) {
-		String sql = "SELECT ORIGIN_AIRPORT_ID AS PARTENZA, DESTINATION_AIRPORT_ID AS ARRIVO, AVG(DISTANCE) AS PESO FROM flights GROUP BY ORIGIN_AIRPORT_ID, DESTINATION_AIRPORT_ID" ;
+	public Map<String, Rotta> coppiaAeroporti(Map<Integer, Airport> idMap) {
 		
-		List<Rotta> result = new ArrayList<>();
+		String sourceSQL = "SELECT ORIGIN_AIRPORT_ID AS PARTENZA, DESTINATION_AIRPORT_ID AS ARRIVO, AVG(DISTANCE) AS PESO FROM flights GROUP BY ORIGIN_AIRPORT_ID, DESTINATION_AIRPORT_ID" ;
+		String targetSQL = "SELECT DESTINATION_AIRPORT_ID AS PARTENZA, ORIGIN_AIRPORT_ID AS ARRIVO, AVG(DISTANCE) AS PESO FROM flights GROUP BY DESTINATION_AIRPORT_ID, ORIGIN_AIRPORT_ID" ;
+		
+		Map<String, Rotta> result = new HashMap<>();
 		
 		try {
 			Connection conn = ConnectDB.getConnection() ;
-			PreparedStatement st = conn.prepareStatement(sql);
-			ResultSet res = st.executeQuery();
+			PreparedStatement stS = conn.prepareStatement(sourceSQL);
+			ResultSet res = stS.executeQuery();
 			
 			while(res.next()) {
-				Rotta r = new Rotta(idMap.get(res.getInt("PARTENZA")),idMap.get(res.getInt("ARRIVO")));
-				r.setPeso(res.getFloat("PESO"));
-				result.add(r);
+				String idRottaS = ""+res.getInt("PARTENZA")+res.getInt("ARRIVO");
+				Rotta source = new Rotta(idRottaS, idMap.get(res.getInt("PARTENZA")),idMap.get(res.getInt("ARRIVO")));
+				source.setPeso(res.getFloat("PESO"));
+				result.put(idRottaS, source);
 			}
 			
+			stS.close();
+			
+			PreparedStatement stT = conn.prepareStatement(targetSQL);
+			ResultSet resT = stT.executeQuery();
+			
+			while(resT.next()) {
+				String idRottaT = ""+resT.getInt("PARTENZA")+resT.getInt("ARRIVO");
+				if(!result.containsKey(idRottaT)) {
+					Rotta target = new Rotta(idRottaT, idMap.get(resT.getInt("PARTENZA")),idMap.get(resT.getInt("ARRIVO")));
+					target.setPeso(resT.getFloat("PESO"));
+					result.put(idRottaT, target);
+				}else {
+					result.get(idRottaT).setPeso(resT.getFloat("PESO"));
+				}
+				
+			}
+			
+			stT.close();
 			conn.close();
+			
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+				
 		return result ;
 	}
 
