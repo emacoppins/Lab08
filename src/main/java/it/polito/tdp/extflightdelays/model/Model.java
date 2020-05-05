@@ -9,13 +9,22 @@ import it.polito.tdp.extflightdelays.db.ExtFlightDelaysDAO;
 
 public class Model {
 
-	private Graph<Airport, DefaultWeightedEdge> grafo; //Vertici artobject e archi scelti in base all'esigenza
+	private Graph<Airport, DefaultWeightedEdge> grafo;
 	private Map<Integer, Airport> idMap;	
 	
+	/**
+	 * Costruttore della classe model
+	 */
 	public Model() {
 		idMap = new HashMap<Integer,Airport>();
 	}
 	
+	
+	/**
+	 * Metodo usato per costruire il grafo
+	 * @param distanzaMin
+	 * @return un grafo con n vertici (n aeroporti) e n archi che rispattanto il vincolo di distanzaMin
+	 */
 	public Graph<Airport, DefaultWeightedEdge> creaGrafo(int distanzaMin) {
 		
 		this.grafo = new SimpleWeightedGraph<>(DefaultWeightedEdge.class);
@@ -28,7 +37,7 @@ public class Model {
 		
 		Map<String, Rotta> rotte = dao.coppiaAeroporti(idMap);
 		for(Rotta r : rotte.values()) {
-			if(r.getPeso() >= distanzaMin) {
+			if(r.getPeso() > distanzaMin) {
 				Graphs.addEdge(this.grafo, idMap.get(r.getSource().getId()), idMap.get(r.getTarget().getId()), r.getPeso());
 			}
 		}

@@ -98,10 +98,15 @@ public class ExtFlightDelaysDAO {
 		}
 	}
 
+	/**
+	 * Metodo per la creazione di rotte tra aeroporti con il calcolo del peso
+	 * @param idMap
+	 * @return una lista di rotte
+	 */
 	public Map<String, Rotta> coppiaAeroporti(Map<Integer, Airport> idMap) {
 		
-		String sourceSQL = "SELECT ORIGIN_AIRPORT_ID AS PARTENZA, DESTINATION_AIRPORT_ID AS ARRIVO, AVG(DISTANCE) AS PESO FROM flights GROUP BY ORIGIN_AIRPORT_ID, DESTINATION_AIRPORT_ID" ;
-		String targetSQL = "SELECT DESTINATION_AIRPORT_ID AS PARTENZA, ORIGIN_AIRPORT_ID AS ARRIVO, AVG(DISTANCE) AS PESO FROM flights GROUP BY DESTINATION_AIRPORT_ID, ORIGIN_AIRPORT_ID" ;
+		String sourceSQL = "SELECT ORIGIN_AIRPORT_ID AS PARTENZA, DESTINATION_AIRPORT_ID AS ARRIVO, AVG(DISTANCE) AS PESO FROM flights GROUP BY ORIGIN_AIRPORT_ID, DESTINATION_AIRPORT_ID HAVING COUNT(*) >= 1" ;
+		String targetSQL = "SELECT DESTINATION_AIRPORT_ID AS PARTENZA, ORIGIN_AIRPORT_ID AS ARRIVO, AVG(DISTANCE) AS PESO FROM flights GROUP BY DESTINATION_AIRPORT_ID, ORIGIN_AIRPORT_ID HAVING COUNT(*) >= 1" ;
 		
 		Map<String, Rotta> result = new HashMap<>();
 		
@@ -111,7 +116,7 @@ public class ExtFlightDelaysDAO {
 			ResultSet res = stS.executeQuery();
 			
 			while(res.next()) {
-				String idRottaS = ""+res.getInt("PARTENZA")+res.getInt("ARRIVO");
+				String idRottaS = ""+res.getInt("PARTENZA")+idMap.get(res.getInt("PARTENZA")).getCity()+res.getInt("ARRIVO")+idMap.get(res.getInt("ARRIVO")).getCity();
 				Rotta source = new Rotta(idRottaS, idMap.get(res.getInt("PARTENZA")),idMap.get(res.getInt("ARRIVO")));
 				source.setPeso(res.getFloat("PESO"));
 				result.put(idRottaS, source);
@@ -123,7 +128,7 @@ public class ExtFlightDelaysDAO {
 			ResultSet resT = stT.executeQuery();
 			
 			while(resT.next()) {
-				String idRottaT = ""+resT.getInt("PARTENZA")+resT.getInt("ARRIVO");
+				String idRottaT = ""+resT.getInt("ARRIVO")+idMap.get(resT.getInt("ARRIVO")).getCity()+resT.getInt("PARTENZA")+idMap.get(resT.getInt("PARTENZA")).getCity();
 				if(!result.containsKey(idRottaT)) {
 					Rotta target = new Rotta(idRottaT, idMap.get(resT.getInt("PARTENZA")),idMap.get(resT.getInt("ARRIVO")));
 					target.setPeso(resT.getFloat("PESO"));
@@ -131,7 +136,6 @@ public class ExtFlightDelaysDAO {
 				}else {
 					result.get(idRottaT).setPeso(resT.getFloat("PESO"));
 				}
-				
 			}
 			
 			stT.close();

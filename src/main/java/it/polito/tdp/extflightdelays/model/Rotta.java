@@ -34,7 +34,7 @@ public class Rotta {
 	}
 
 	public float getPeso() {
-		return peso/conta;
+		return this.peso/this.conta;
 	}
 
 	public void setPeso(float peso) {

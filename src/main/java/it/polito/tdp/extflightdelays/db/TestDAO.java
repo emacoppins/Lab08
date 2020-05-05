@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import it.polito.tdp.extflightdelays.model.Airport;
-import it.polito.tdp.extflightdelays.model.Flight;
 
 public class TestDAO {
 

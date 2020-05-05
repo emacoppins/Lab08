@@ -66,9 +66,9 @@ public class FXMLController {
     	StringBuilder sb = new StringBuilder();
     	
     	for(DefaultWeightedEdge e : grafo.edgeSet()){
-    		sb.append(String.format("%-70s ", "FROM " + grafo.getEdgeSource(e).getAirportName()));
-			sb.append(String.format("%-70s ", " ---- > TO " + grafo.getEdgeTarget(e).getAirportName()));
-			sb.append(String.format("%-70s ", "weight: " + grafo.getEdgeWeight(e)));
+    		sb.append(String.format("%-15s ", "FROM " + grafo.getEdgeSource(e).getCity()));
+			sb.append(String.format("%-20s ", " ---- > TO " + grafo.getEdgeTarget(e).getCity()));
+			sb.append(String.format("%-15s ", "weight: " + grafo.getEdgeWeight(e)));
 			sb.append("\n");
     	}
     	
