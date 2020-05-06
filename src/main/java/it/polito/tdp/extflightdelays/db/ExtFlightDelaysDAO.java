@@ -119,8 +119,8 @@ public class ExtFlightDelaysDAO {
 			while(res.next()) {
 			
 				Rotta rotta = new Rotta(idMap.get(res.getInt("PARTENZA")),idMap.get(res.getInt("ARRIVO")));
-				result.add(rotta);
 				rotta.setPeso(res.getFloat("PESO"));
+				result.add(rotta);
 
 			}
 			
