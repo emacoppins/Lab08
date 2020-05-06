@@ -99,59 +99,32 @@ public class ExtFlightDelaysDAO {
 	}
 
 	/**
-	 * Metodo per la creazione di rotte tra aeroporti con il calcolo del peso
+	 * Metodo per la creazione di rotte (che rispettano il vincolo dell'utente) tra aeroporti con il calcolo del peso
 	 * @param idMap
 	 * @return una lista di rotte
 	 */
 	public List<Rotta> coppiaAeroporti(Map<Integer, Airport> idMap, int distMinima) {
 		
-		String sourceSQL = "SELECT ORIGIN_AIRPORT_ID AS PARTENZA, DESTINATION_AIRPORT_ID AS ARRIVO, AVG(DISTANCE) AS PESO FROM flights GROUP BY ORIGIN_AIRPORT_ID, DESTINATION_AIRPORT_ID HAVING AVG(DISTANCE) > ?" ;
-		//String targetSQL = "SELECT DESTINATION_AIRPORT_ID AS PARTENZA, ORIGIN_AIRPORT_ID AS ARRIVO, AVG(DISTANCE) AS PESO FROM flights GROUP BY DESTINATION_AIRPORT_ID, ORIGIN_AIRPORT_ID HAVING COUNT(*) >= 1" ;
-		
-		//Map<String, Rotta> result = new HashMap<>();
+		String sql = "SELECT ORIGIN_AIRPORT_ID AS PARTENZA, DESTINATION_AIRPORT_ID AS ARRIVO, AVG(DISTANCE) AS PESO FROM flights GROUP BY ORIGIN_AIRPORT_ID, DESTINATION_AIRPORT_ID HAVING AVG(DISTANCE) > ?" ;
+
 		List<Rotta> result = new ArrayList<>();
 		
 		try {
 			Connection conn = ConnectDB.getConnection() ;
-			PreparedStatement stS = conn.prepareStatement(sourceSQL);
-			stS.setInt(1, distMinima);
-			ResultSet res = stS.executeQuery();
+			PreparedStatement st = conn.prepareStatement(sql);
+			st.setInt(1, distMinima);
+			ResultSet res = st.executeQuery();
 
 			
 			while(res.next()) {
-				//String idRottaS = ""+res.getInt("PARTENZA")+idMap.get(res.getInt("PARTENZA")).getCity()+res.getInt("ARRIVO")+idMap.get(res.getInt("ARRIVO")).getCity();
-				
-				//Controllo se arco esiste gia, se presente prendo il peso e faccio media aggiornata
-				
-				Rotta source = new Rotta(idMap.get(res.getInt("PARTENZA")),idMap.get(res.getInt("ARRIVO")));
-				if(result.contains(source)) {
-					source.aggiornaPeso(res.getFloat("PESO"));
-				}else {
-					result.add(source);
-					source.setPeso(res.getFloat("PESO"));
-				}
+			
+				Rotta rotta = new Rotta(idMap.get(res.getInt("PARTENZA")),idMap.get(res.getInt("ARRIVO")));
+				result.add(rotta);
+				rotta.setPeso(res.getFloat("PESO"));
 
 			}
 			
-			stS.close();
-			
-			/*
-			PreparedStatement stT = conn.prepareStatement(targetSQL);
-			ResultSet resT = stT.executeQuery();
-			
-			while(resT.next()) {
-				String idRottaT = ""+resT.getInt("ARRIVO")+idMap.get(resT.getInt("ARRIVO")).getCity()+resT.getInt("PARTENZA")+idMap.get(resT.getInt("PARTENZA")).getCity();
-				if(!result.containsKey(idRottaT)) {
-					String idRottaNEW = ""+resT.getInt("PARTENZA")+idMap.get(resT.getInt("PARTENZA")).getCity()+resT.getInt("ARRIVO")+idMap.get(resT.getInt("ARRIVO")).getCity();
-					Rotta target = new Rotta(idRottaNEW, idMap.get(resT.getInt("PARTENZA")),idMap.get(resT.getInt("ARRIVO")));
-					target.setPeso(resT.getFloat("PESO"));
-					result.put(idRottaNEW, target);
-				}else {
-					result.get(idRottaT).setPeso(resT.getFloat("PESO"));
-				}
-			}
-			
-			stT.close();*/
+			st.close();
 			
 			conn.close();
 			
@@ -164,7 +137,7 @@ public class ExtFlightDelaysDAO {
 	}
 
 	//METODO PER APPROCCIO SEMPLICE
-	public int getPeso(Airport a1, Airport a2) {
+	/*public int getPeso(Airport a1, Airport a2) {
 
 		String sql = "SELECT AVG(DISTANCE) as PESO FROM flights WHERE ORIGIN_AIRPORT_ID = ? AND DESTINATION_AIRPORT_ID = ?";
 		Connection conn = ConnectDB.getConnection();
@@ -184,6 +157,6 @@ public class ExtFlightDelaysDAO {
 			e.printStackTrace();
 		}
 		return -1;
-	}
+	}*/
 	
 }

@@ -39,17 +39,31 @@ public class Model {
 		List<Rotta> rotte = dao.coppiaAeroporti(idMap, distanzaMin);
 		
 		for(Rotta r : rotte) {
-			Graphs.addEdge(this.grafo, idMap.get(r.getSource().getId()), idMap.get(r.getTarget().getId()), r.getPeso());
+			//Se il grafo contiene arco allora aggiorno peso altrimenti aggiungo arco
+			if(this.grafo.containsEdge(r.getSource(), r.getTarget())){ //Non ho grafo orientato ed andata e ritorno sono uguali
+				DefaultWeightedEdge e = this.grafo.getEdge(r.getSource(), r.getTarget());
+				this.grafo.setEdgeWeight(e, (this.grafo.getEdgeWeight(e)+r.getPeso())/2);
+			}else {
+				Graphs.addEdge(this.grafo, idMap.get(r.getSource().getId()), idMap.get(r.getTarget().getId()), r.getPeso());
+			}
 		}
 		
 		return grafo;
 		
 	}
 	
+	/**
+	 * Metodo che
+	 * @return il numero dei vertici del grafo creato
+	 */
 	public int nVertici() {
 		return this.grafo.vertexSet().size();
 	}
 	
+	/**
+	 * Metodo che
+	 * @return il numero degli archi del grafo creato
+	 */
 	public int nArchi() {
 		return this.grafo.edgeSet().size();
 	}
