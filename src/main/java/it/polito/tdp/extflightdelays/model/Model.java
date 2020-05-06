@@ -35,11 +35,11 @@ public class Model {
 		//Aggiungere i vertici
 		Graphs.addAllVertices(this.grafo, idMap.values());
 		
-		Map<String, Rotta> rotte = dao.coppiaAeroporti(idMap);
-		for(Rotta r : rotte.values()) {
-			if(r.getPeso() > distanzaMin) {
-				Graphs.addEdge(this.grafo, idMap.get(r.getSource().getId()), idMap.get(r.getTarget().getId()), r.getPeso());
-			}
+		//Map<String, Rotta> rotte = dao.coppiaAeroporti(idMap);
+		List<Rotta> rotte = dao.coppiaAeroporti(idMap, distanzaMin);
+		
+		for(Rotta r : rotte) {
+			Graphs.addEdge(this.grafo, idMap.get(r.getSource().getId()), idMap.get(r.getTarget().getId()), r.getPeso());
 		}
 		
 		return grafo;

@@ -2,15 +2,15 @@ package it.polito.tdp.extflightdelays.model;
 
 public class Rotta {
 	
-	private String idRotta;
+	//private String idRotta;
 	private Airport source;
 	private Airport target;
 	private float peso;
 	private int conta;
 
-	public Rotta(String idRotta, Airport source, Airport target) {
+	public Rotta(Airport source, Airport target) {
 		// TODO Auto-generated constructor stub
-		this.idRotta = idRotta;
+		//this.idRotta = idRotta;
 		this.source=source;
 		this.target=target;
 		this.peso = 0;
@@ -34,14 +34,20 @@ public class Rotta {
 	}
 
 	public float getPeso() {
-		return this.peso/this.conta;
+		return this.peso;
 	}
 
 	public void setPeso(float peso) {
-		this.conta++;
-		this.peso+=peso;
+		this.peso=peso;
 	}
 
+	public void aggiornaPeso(float pesoAgg) {
+		this.conta++;
+		this.peso += pesoAgg;
+		this.peso = this.peso/this.conta;
+	}
+
+	/*
 	public String getIdRotta() {
 		return idRotta;
 	}
@@ -74,5 +80,5 @@ public class Rotta {
 			return false;
 		return true;
 	}
-
+	*/
 }

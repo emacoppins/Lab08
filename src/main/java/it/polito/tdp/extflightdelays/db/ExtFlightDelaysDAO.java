@@ -5,7 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
+//import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -103,42 +103,56 @@ public class ExtFlightDelaysDAO {
 	 * @param idMap
 	 * @return una lista di rotte
 	 */
-	public Map<String, Rotta> coppiaAeroporti(Map<Integer, Airport> idMap) {
+	public List<Rotta> coppiaAeroporti(Map<Integer, Airport> idMap, int distMinima) {
 		
-		String sourceSQL = "SELECT ORIGIN_AIRPORT_ID AS PARTENZA, DESTINATION_AIRPORT_ID AS ARRIVO, AVG(DISTANCE) AS PESO FROM flights GROUP BY ORIGIN_AIRPORT_ID, DESTINATION_AIRPORT_ID HAVING COUNT(*) >= 1" ;
-		String targetSQL = "SELECT DESTINATION_AIRPORT_ID AS PARTENZA, ORIGIN_AIRPORT_ID AS ARRIVO, AVG(DISTANCE) AS PESO FROM flights GROUP BY DESTINATION_AIRPORT_ID, ORIGIN_AIRPORT_ID HAVING COUNT(*) >= 1" ;
+		String sourceSQL = "SELECT ORIGIN_AIRPORT_ID AS PARTENZA, DESTINATION_AIRPORT_ID AS ARRIVO, AVG(DISTANCE) AS PESO FROM flights GROUP BY ORIGIN_AIRPORT_ID, DESTINATION_AIRPORT_ID HAVING AVG(DISTANCE) > ?" ;
+		//String targetSQL = "SELECT DESTINATION_AIRPORT_ID AS PARTENZA, ORIGIN_AIRPORT_ID AS ARRIVO, AVG(DISTANCE) AS PESO FROM flights GROUP BY DESTINATION_AIRPORT_ID, ORIGIN_AIRPORT_ID HAVING COUNT(*) >= 1" ;
 		
-		Map<String, Rotta> result = new HashMap<>();
+		//Map<String, Rotta> result = new HashMap<>();
+		List<Rotta> result = new ArrayList<>();
 		
 		try {
 			Connection conn = ConnectDB.getConnection() ;
 			PreparedStatement stS = conn.prepareStatement(sourceSQL);
+			stS.setInt(1, distMinima);
 			ResultSet res = stS.executeQuery();
+
 			
 			while(res.next()) {
-				String idRottaS = ""+res.getInt("PARTENZA")+idMap.get(res.getInt("PARTENZA")).getCity()+res.getInt("ARRIVO")+idMap.get(res.getInt("ARRIVO")).getCity();
-				Rotta source = new Rotta(idRottaS, idMap.get(res.getInt("PARTENZA")),idMap.get(res.getInt("ARRIVO")));
-				source.setPeso(res.getFloat("PESO"));
-				result.put(idRottaS, source);
+				//String idRottaS = ""+res.getInt("PARTENZA")+idMap.get(res.getInt("PARTENZA")).getCity()+res.getInt("ARRIVO")+idMap.get(res.getInt("ARRIVO")).getCity();
+				
+				//Controllo se arco esiste gia, se presente prendo il peso e faccio media aggiornata
+				
+				Rotta source = new Rotta(idMap.get(res.getInt("PARTENZA")),idMap.get(res.getInt("ARRIVO")));
+				if(result.contains(source)) {
+					source.aggiornaPeso(res.getFloat("PESO"));
+				}else {
+					result.add(source);
+					source.setPeso(res.getFloat("PESO"));
+				}
+
 			}
 			
 			stS.close();
 			
+			/*
 			PreparedStatement stT = conn.prepareStatement(targetSQL);
 			ResultSet resT = stT.executeQuery();
 			
 			while(resT.next()) {
 				String idRottaT = ""+resT.getInt("ARRIVO")+idMap.get(resT.getInt("ARRIVO")).getCity()+resT.getInt("PARTENZA")+idMap.get(resT.getInt("PARTENZA")).getCity();
 				if(!result.containsKey(idRottaT)) {
-					Rotta target = new Rotta(idRottaT, idMap.get(resT.getInt("PARTENZA")),idMap.get(resT.getInt("ARRIVO")));
+					String idRottaNEW = ""+resT.getInt("PARTENZA")+idMap.get(resT.getInt("PARTENZA")).getCity()+resT.getInt("ARRIVO")+idMap.get(resT.getInt("ARRIVO")).getCity();
+					Rotta target = new Rotta(idRottaNEW, idMap.get(resT.getInt("PARTENZA")),idMap.get(resT.getInt("ARRIVO")));
 					target.setPeso(resT.getFloat("PESO"));
-					result.put(idRottaT, target);
+					result.put(idRottaNEW, target);
 				}else {
 					result.get(idRottaT).setPeso(resT.getFloat("PESO"));
 				}
 			}
 			
-			stT.close();
+			stT.close();*/
+			
 			conn.close();
 			
 		} catch (SQLException e) {

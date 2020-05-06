@@ -50,7 +50,9 @@ public class FXMLController {
     	
     	int distMin = Integer.parseInt(input);
     	
+    	long start = System.currentTimeMillis();
     	Graph<Airport, DefaultWeightedEdge> grafo = this.model.creaGrafo(distMin);
+    	long end = System.currentTimeMillis();
     	
     	int vertici = this.model.nVertici();
     	int archi = this.model.nArchi();
@@ -73,6 +75,8 @@ public class FXMLController {
     	}
     	
     	this.txtResult.appendText(sb.toString());
+    	double result = (end-start)/1000.0;
+    	this.txtResult.appendText("COMPLETED IN: " + result + " seconds");
     	
     }
 
