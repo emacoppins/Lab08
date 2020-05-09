@@ -1,3 +1,4 @@
+
 package it.polito.tdp.extflightdelays.db;
 
 import java.sql.Connection;
@@ -17,7 +18,7 @@ public class ConnectDB {
 			HikariConfig config = new HikariConfig();
 			config.setJdbcUrl(jdbcURL);
 			config.setUsername("root");
-			config.setPassword("rootroot");
+			config.setPassword("emacop98");
 			
 			// configurazione MySQL
 			config.addDataSourceProperty("cachePrepStmts", "true");
